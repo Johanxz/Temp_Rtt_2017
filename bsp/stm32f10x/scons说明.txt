@@ -1,0 +1,2 @@
+scons --target=mdk4 -s   //生成UV4工程
+scons -c                 //这个命令会清除编译出来的文件
