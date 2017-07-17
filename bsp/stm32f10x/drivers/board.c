@@ -154,7 +154,6 @@ void EXT_SRAM_Configuration(void)
     FSMC_NORSRAMCmd(FSMC_Bank1_NORSRAM3, ENABLE);
 }
 #endif
-
  //*******************初始化独立看门狗*************************************
 //函数定义: void IWDG_Configuration(void) 
 //描    述：初始化独立看门狗
@@ -163,14 +162,14 @@ void EXT_SRAM_Configuration(void)
 //备    注：分频因子=4*2^prer.但最大值只能是256!时间计算(大概):Tout=40K/((4*2^prer)*rlr)值	 2S超时
 //Editor：liuqh 2013-1-16  Company: BXXJS
 //*******************************************************************
-//static void IWDG_Configuration(void) 
-//{
-//	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);//使能对IWDG->PR和IWDG->RLR的写
-//	IWDG_SetPrescaler(IWDG_Prescaler_64);//64分频
-//	IWDG_SetReload(1300);
-//	IWDG_ReloadCounter();
-//	IWDG_Enable();		
-//}
+static void IWDG_Configuration(void) 
+{
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);//使能对IWDG->PR和IWDG->RLR的写
+	IWDG_SetPrescaler(IWDG_Prescaler_64);//64分频
+	IWDG_SetReload(1300);
+	IWDG_ReloadCounter();
+	IWDG_Enable();		
+}
 //*******************喂独立看门狗*************************************
 //函数定义: void IWDG_Feed(void)
 //描    述：初始化独立看门狗
@@ -184,9 +183,6 @@ void IWDG_Feed(void)
 {
 	IWDG_ReloadCounter();//reload											   
 }
-
-
-
 
 /**
  * This is the timer interrupt service routine.
@@ -228,8 +224,8 @@ void rt_hw_board_init(void)
 #ifdef RT_USING_COMPONENTS_INIT
     rt_components_board_init();
 #endif
-	
-//	  IWDG_Configuration();
+	//	TODO  方便调试，暂时注释看门狗，正式发布时需要打开
+ 	IWDG_Configuration();
 }
 
 /*@}*/

@@ -58,6 +58,9 @@
 #define MB_PORT_HAS_CLOSE 0
 #endif
 
+
+extern uint16_t   usSRegHoldBuf[] ;
+
 /* ----------------------- Static variables ---------------------------------*/
 
 static UCHAR    ucMBAddress;
@@ -400,7 +403,8 @@ eMBErrorCode eMBPoll( void )
                     ucMBFrame[usLength++] = ( UCHAR )( ucFunctionCode | MB_FUNC_ERROR );
                     ucMBFrame[usLength++] = eException;
                 }
-								  eStatus = peMBFrameSendCur( ucRcvAddress, ucMBFrame, usLength );
+								rt_thread_delay(RT_TICK_PER_SECOND*((usSRegHoldBuf[0x12]>500)?500:usSRegHoldBuf[0x12])/1000);
+								eStatus = peMBFrameSendCur( ucRcvAddress, ucMBFrame, usLength );
 //                eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
 //            }
             break;

@@ -19,19 +19,20 @@ vu16 After_filter[5]; //?????????????
 	 
 	 Re = log(R)/usSRegHoldBuf[0x20] + 1/298.15;
 	 
-	 Temp = (1/Re - 273.15);
-	 
-	 Temp = (Temp>0)?(Temp + 0.5):(Temp - 0.5);
+	 Temp = (1/Re - 273.15);	 
 	 
 	 switch((usSRegHoldBuf[0x21]&0x0f))
 	 {
 		 case 0:
+			 Temp = (Temp>0)?(Temp + 0.5):(Temp - 0.5);
 			 Temp1 = Temp;
 			 break;
 		 case 1:
+			 Temp = (Temp>0)?(Temp + 0.05):(Temp - 0.05);			 
 			 Temp1 = 10 * Temp;
 			 break;
 		 case 2:
+			 Temp = (Temp>0)?(Temp + 0.005):(Temp - 0.005);			 
 			 Temp1 = 100 * Temp;
 			 break;
 		 default:

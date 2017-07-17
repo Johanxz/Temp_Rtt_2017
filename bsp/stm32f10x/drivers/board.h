@@ -46,6 +46,6 @@
 //#define USING_BXCAN1
 
 void rt_hw_board_init(void);
-//void IWDG_Configuration(void);
+void IWDG_Configuration(void);
 void IWDG_Feed(void);
 #endif /* __BOARD_H__ */

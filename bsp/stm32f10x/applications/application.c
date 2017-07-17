@@ -29,9 +29,8 @@
 #include "led.h"
 #include "adc.h"
 #include "flash.h"
-#include "rtdevice.h"
-
 #include "user_mb_app.h"
+#include "rtdevice.h"
 
 extern uint8_t   ucSDiscInBuf[]  ;
 extern uint8_t   ucSCoilBuf[]    ;
@@ -41,14 +40,14 @@ extern uint16_t   usSRegHoldBuf[] ;
 extern vu16 After_filter[5]; //AD寄存器
 
 ALIGN(RT_ALIGN_SIZE)
+static struct rt_thread thread_led;
+static struct rt_thread thread_adc;
+static struct rt_thread thread_ModbusSlavePoll;
 //====================操作系统各线程堆栈====================================
 static rt_uint8_t thread_led_stack[256];
 static rt_uint8_t thread_adc_stack[512];
 static rt_uint8_t thread_ModbusSlavePoll_stack[512];
 
-static struct rt_thread thread_led;
-static struct rt_thread thread_adc;
-static struct rt_thread thread_ModbusSlavePoll;
 
 
 void thread_led_entry(void* parameter)
@@ -78,10 +77,11 @@ void thread_led_entry(void* parameter)
 
 
 
+
+
 void thread_adc_entry(void* parameter)
 {
-
-    rt_hw_adc_init();
+  rt_hw_adc_init();
 	  
     while (1)
     {
@@ -102,9 +102,9 @@ void thread_adc_entry(void* parameter)
 			
 			//模拟量值
 			  usSRegInBuf[0x00] = 0x0100;   	//	产品码   0x100  = 温度采集模块
-				usSRegInBuf[0x01] = usSRegHoldBuf[0X01];
-				usSRegInBuf[0x02] = usSRegHoldBuf[0X02];
-				usSRegInBuf[0x03] = usSRegHoldBuf[0X03];
+				usSRegInBuf[0x01] = usSRegHoldBuf[0X00];
+				usSRegInBuf[0x02] = usSRegHoldBuf[0X01];
+				usSRegInBuf[0x03] = usSRegHoldBuf[0X02];
 			  usSRegInBuf[0x04] = 0x0100;                //版本号
 			
 			  usSRegInBuf[0x28] = After_filter[0]&0x0fff;
@@ -123,8 +123,7 @@ void thread_adc_entry(void* parameter)
 			{
 				usSRegHoldBuf[0x2f] = 0x0000;
 				STMFLASH_Write((u32)0x0800fc00,usSRegHoldBuf,(u16)48);  //63K以上
-//				rt_hw_cpu_shutdown();
-				while(1);
+				rt_hw_cpu_shutdown();
 			}
 			rt_thread_delay(RT_TICK_PER_SECOND/10);
     }
@@ -192,13 +191,10 @@ void thread_ModbusSlavePoll_entry(void* parameter)
 			eParity = MB_PAR_NONE;
 		  break;
 	};
-//	
-//	eMBInit(MB_RTU, ucSlaveAddress, 1, ulBaudRate,  eParity);
 	
-		eMBInit(MB_RTU, 0x01, 1, 115200,  MB_PAR_EVEN);
+	eMBInit(MB_RTU, ucSlaveAddress, 1, ulBaudRate,  eParity);
 	
 	eMBEnable();
-	
 	while (1)
 	{
 		eMBPoll();
@@ -208,19 +204,19 @@ void thread_ModbusSlavePoll_entry(void* parameter)
 
 
 
-
 int rt_application_init(void)
 {
     rt_err_t result;
 
-	 result = rt_thread_init(&thread_led, 
+		
+ result = rt_thread_init(&thread_led, 
 		                         "led",
 														  thread_led_entry, 
 														  RT_NULL, 
 															thread_led_stack,
 															sizeof(thread_led_stack), 
 														  12,
-															5);
+															50);
 															
 		if (result == RT_EOK)
     {
@@ -234,7 +230,7 @@ int rt_application_init(void)
 															thread_adc_stack,
 															sizeof(thread_adc_stack), 
 														  11,
-															5);
+															50);
 															
 		if (result == RT_EOK)
     {
@@ -248,12 +244,12 @@ int rt_application_init(void)
 															thread_ModbusSlavePoll_stack,
 															sizeof(thread_ModbusSlavePoll_stack), 
 														  10,
-															5);
+															50);
 															
 		if (result == RT_EOK)
     {
        	rt_thread_startup(&thread_ModbusSlavePoll);	
-    }											
+    }																				
 
 
     return 0;
